@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Фильтр тендеров</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root{color-scheme:light dark;--accent:var(--tg-theme-button-color,#2481cc);--accent-text:var(--tg-theme-button-text-color,#fff);--bg:var(--tg-theme-bg-color,#f5f6f8);--card:var(--tg-theme-secondary-bg-color,#fff);--text:var(--tg-theme-text-color,#17191c);--hint:var(--tg-theme-hint-color,#707782);--line:color-mix(in srgb,var(--hint) 25%,transparent);--soft:color-mix(in srgb,var(--accent) 10%,var(--card));--danger:#d94b4b}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:720px;margin:auto;padding:14px 14px calc(108px + env(safe-area-inset-bottom))}h1{margin:4px 0;font-size:24px;line-height:1.15}h2{margin:0 0 6px;font-size:21px}h3{margin:18px 0 8px;font-size:15px}p{margin:0}.muted,small{color:var(--hint)}
+    .progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0 12px}.progress span{height:5px;border-radius:99px;background:var(--line)}.progress span.done{background:var(--accent)}.step{display:none}.step.active{display:block;animation:appear .18s ease-out}@keyframes appear{from{opacity:.25;transform:translateY(5px)}}
+    .card{margin-top:14px;padding:15px;border-radius:16px;background:var(--card);box-shadow:0 1px 0 rgba(0,0,0,.04)}label.field{display:grid;gap:6px;margin-bottom:13px;font-size:14px;font-weight:600}input,textarea,select{width:100%;min-height:46px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;outline:0;background:var(--bg);color:var(--text);font:inherit}input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 16%,transparent)}textarea{min-height:82px;resize:vertical}
+    .country-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.country,.choice,.chip,.result{border:1px solid var(--line);background:var(--card);color:var(--text)}.country{min-height:72px;padding:9px 5px;border-radius:13px;text-align:center;font:inherit}.country strong{display:block;margin-top:3px;font-size:13px}.country.active,.choice.active{border-color:var(--accent);background:var(--soft)}.source-list,.preset-list,.selected-list{display:flex;flex-wrap:wrap;gap:8px}.choice,.chip{width:auto;min-height:38px;padding:8px 10px;border-radius:10px;font:inherit}.choice input{display:none}.selected-list:empty::after{content:"Ничего не выбрано";color:var(--hint);font-size:14px}.chip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}.chip button{width:auto;min-height:0;padding:0;background:transparent;color:var(--hint);font-size:18px}
+    .results{display:none;max-height:285px;overflow:auto;margin-top:7px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.results.open{display:block}.result{display:block;width:100%;padding:10px 12px;border:0;border-bottom:1px solid var(--line);border-radius:0;text-align:left;font:inherit}.result:last-child{border-bottom:0}.result small{display:block;margin-top:2px}.tip{margin-top:10px;padding:11px 12px;border-radius:12px;background:var(--soft);color:var(--hint);font-size:14px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.wide{grid-column:1/-1}details{margin-top:12px}summary{cursor:pointer;color:var(--accent);font-weight:600}.error{display:none;margin:12px 0 0;color:var(--danger);font-size:14px;font-weight:600}.error.visible{display:block}.review{display:grid;gap:11px}.review-row{padding-bottom:10px;border-bottom:1px solid var(--line)}.review-row:last-child{border:0;padding:0}.review-row b{display:block;margin-bottom:2px;font-size:13px;color:var(--hint)}
+    footer{position:fixed;z-index:5;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line)}.actions{display:grid;grid-template-columns:.38fr 1fr;gap:9px;max-width:692px;margin:auto}.actions #back[hidden]+#next{grid-column:1/-1}button{min-height:48px;border:0;border-radius:13px;background:var(--accent);color:var(--accent-text);font:650 16px inherit;cursor:pointer}button.secondary{background:var(--card);color:var(--text);border:1px solid var(--line)}button[hidden]{display:none}.success{padding:32px 10px;text-align:center}.success .icon{font-size:48px}@media(max-width:440px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}}
+  </style>
+</head>
+<body>
+<main>
+  <h1 id="title">Новый фильтр</h1>
+  <p class="muted">Один раз настройте критерии — бот будет проверять новые тендеры каждый час.</p>
+  <div class="progress" aria-label="Прогресс"><span></span><span></span><span></span><span></span></div>
+  <form id="profile" novalidate>
+    <section class="step active" data-step="1">
+      <h2>Где искать?</h2><p class="muted">Выберите одну страну для этого фильтра.</p>
+      <div class="card">
+        <label class="field">Название фильтра<input name="name" maxlength="80" placeholder="Например, Маркетинг" autocomplete="off"></label>
+        <div class="country-grid" role="radiogroup">
+          <button class="country active" type="button" data-country="BY">🇧🇾<strong>Беларусь</strong></button>
+          <button class="country" type="button" data-country="KZ">🇰🇿<strong>Казахстан</strong></button>
+          <button class="country" type="button" data-country="RU">🇷🇺<strong>Россия</strong></button>
+        </div>
+        <h3>Площадки</h3><div class="source-list" id="sources"></div>
+        <div class="tip">Если не уверены — оставьте все площадки выбранными.</div>
+      </div>
+    </section>
+    <section class="step" data-step="2">
+      <h2>Что искать?</h2><p class="muted">Выберите точные категории. Это надёжнее, чем описывать сферу голосом.</p>
+      <div class="card">
+        <label class="field">Найдите отрасль или категорию
+          <span><input id="category-search" type="search" placeholder="Например, маркетинг или ремонт" autocomplete="off"><span class="results" id="category-results"></span></span>
+        </label>
+        <div class="selected-list" id="selected-categories"></div>
+        <h3>Популярные отрасли</h3><div class="preset-list" id="popular"></div>
+        <label class="field" style="margin-top:16px">Уточняющие слова <small>необязательно</small><textarea name="include" placeholder="Например: наружная реклама; SMM; размещение рекламы"></textarea></label>
+        <div class="tip">Отрасль охватывает все её подкатегории. Для более строгого отбора выбирайте конкретные категории.</div>
+        <div class="error" id="subject-error">Выберите хотя бы одну отрасль, категорию или укажите ключевое слово.</div>
+      </div>
+    </section>
+    <section class="step" data-step="3">
+      <h2>Уточните условия</h2><p class="muted">Все поля необязательны. Пустое поле означает «без ограничения».</p>
+      <div class="card grid">
+        <label class="field wide">Регион<input name="regions" placeholder="Вся страна"></label>
+        <label class="field">Сумма от, <span data-currency>BYN</span><input name="min_price" inputmode="decimal" placeholder="Без минимума"></label>
+        <label class="field">Сумма до, <span data-currency>BYN</span><input name="max_price" inputmode="decimal" placeholder="Без максимума"></label>
+        <label class="field wide">Минимум дней до окончания приёма<input name="deadline" type="number" inputmode="numeric" min="1" max="365" placeholder="Например, 5"></label>
+        <details class="wide"><summary>Дополнительные условия</summary><div style="margin-top:13px">
+          <label class="field">Исключить слова<textarea name="exclude" placeholder="Например: б/у; аренда; расходники"></textarea></label>
+          <label class="field">Конкретные заказчики<textarea name="customers" placeholder="Через запятую или с новой строки"></textarea></label>
+          <label class="field">Виды процедур<textarea name="procedures" placeholder="Например: электронный аукцион"></textarea></label>
+        </div></details>
+        <div class="error wide" id="money-error">Проверьте сумму или число дней до окончания приёма.</div>
+      </div>
+    </section>
+    <section class="step" data-step="4">
+      <h2>Что проверить с ИИ?</h2><p class="muted">Отметьте важное — ИИ отдельно найдёт это в карточке и документах.</p>
+      <div class="card"><div class="preset-list" id="checks"></div>
+        <label class="field" style="margin-top:16px">Свои вопросы к документам<textarea name="checklist" placeholder="Например: нужна ли лицензия; какой опыт требуется"></textarea></label>
+      </div>
+      <div class="card"><h3 style="margin-top:0">Проверьте фильтр</h3><div class="review" id="review"></div></div>
+    </section>
+  </form>
+</main>
+<footer><div class="actions"><button type="button" class="secondary" id="back" hidden>Назад</button><button type="button" id="next">Далее</button></div></footer>
+<script>
+  const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
+  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+  const countries={BY:{name:'Беларусь',currency:'BYN',region:'Минск, Брестская область',sources:[['goszakupki.by','goszakupki.by'],['icetrade.by','icetrade.by']]},KZ:{name:'Казахстан',currency:'KZT',region:'Алматы, Карагандинская область',sources:[['zakup.gov.kz','Единая платформа zakup.gov.kz']]},RU:{name:'Россия',currency:'RUB',region:'Москва, Краснодарский край',sources:[['zakupki.gov.ru','ЕИС zakupki.gov.ru']]}};
+  const popularNames=['Маркетинг / реклама','Строительство / архитектура','Информационные технологии','Компьютеры / оборудование','Медицина','Транспорт / логистика / таможня'];
+  const checkPresets=['аванс','обеспечение заявки','обеспечение договора','сроки поставки / работ','требования к опыту','лицензии и сертификаты','штрафы и риски договора'];
+  const fallbackIndustries=popularNames.concat(['Безопасность','Машиностроение','Металлы / металлоизделия','Продукты питания','Энергетика','Связь / телекоммуникации']);
+  const selected=new Map();let catalog=[],country='BY',step=1;
+  const split=n=>$(`[name="${n}"]`).value.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean);
+  const number=n=>{const raw=$(`[name="${n}"]`).value.replace(/\s/g,'').replace(',','.');return raw===''?null:Number(raw)};
+  const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function renderSources(saved=null){const wanted=saved||new Set($$('#sources input:checked').map(i=>i.value));$('#sources').innerHTML=countries[country].sources.map(([v,l])=>`<label class="choice active"><input type="checkbox" name="source" value="${v}" checked>✓ ${l}</label>`).join('');if(saved)$$('#sources input').forEach(i=>i.checked=wanted.has(i.value));$$('#sources .choice').forEach(label=>{const input=label.querySelector('input');label.classList.toggle('active',input.checked);label.lastChild.textContent=`${input.checked?'✓':'○'} ${input.value}`;label.onclick=()=>setTimeout(()=>{label.classList.toggle('active',input.checked);label.lastChild.textContent=`${input.checked?'✓':'○'} ${input.value}`})})}
+  function setCountry(code,sources=null){country=code;$$('.country').forEach(b=>b.classList.toggle('active',b.dataset.country===code));$$('[data-currency]').forEach(n=>n.textContent=countries[code].currency);$('[name="regions"]').placeholder=`Вся страна (например: ${countries[code].region})`;renderSources(sources)}
+  function addSelection(name,type='industry',parent=''){const key=`${type}:${name}`;if(!selected.has(key))selected.set(key,{name,type,parent});renderSelected()}
+  function removeSelection(key){selected.delete(key);renderSelected()}
+  function renderSelected(){$('#selected-categories').innerHTML=[...selected].map(([key,item])=>`<span class="chip">${item.type==='category'?'🎯':'🏭'} ${esc(item.name)}<button type="button" data-remove="${esc(key)}" aria-label="Убрать">×</button></span>`).join('');$$('[data-remove]').forEach(b=>b.onclick=()=>removeSelection(b.dataset.remove));$$('#popular .choice').forEach(b=>b.classList.toggle('active',selected.has(`industry:${b.dataset.name}`)))}
+  function renderPopular(){$('#popular').innerHTML=popularNames.map(name=>`<button type="button" class="choice" data-name="${esc(name)}">${esc(name)}</button>`).join('');$$('#popular button').forEach(b=>b.onclick=()=>{const key=`industry:${b.dataset.name}`;selected.has(key)?removeSelection(key):addSelection(b.dataset.name)});renderSelected()}
+  function flatten(data){return(data.industries||[]).flatMap(ind=>[{name:ind.name,type:'industry',parent:''},...(ind.subcategories||[]).map(item=>({name:item.name,type:'category',parent:ind.name}))])}
+  async function loadCatalog(){for(const url of['../categories.json','./categories.json']){try{const response=await fetch(url);if(response.ok){catalog=flatten(await response.json());break}}catch(_){}}if(!catalog.length)catalog=fallbackIndustries.map(name=>({name,type:'industry',parent:''}))}
+  function searchCatalog(query){const box=$('#category-results'),words=query.toLocaleLowerCase('ru').split(/\s+/).filter(Boolean);if(!words.length){box.classList.remove('open');return}const found=catalog.filter(item=>words.every(word=>`${item.name} ${item.parent}`.toLocaleLowerCase('ru').includes(word))).slice(0,30);box.innerHTML=found.length?found.map((item,index)=>`<button type="button" class="result" data-result="${index}"><b>${esc(item.name)}</b><small>${item.type==='category'?`Категория · ${esc(item.parent)}`:'Вся отрасль'}</small></button>`).join(''):'<div class="result muted">Ничего не найдено. Попробуйте другое слово.</div>';box.classList.add('open');$$('[data-result]').forEach(b=>b.onclick=()=>{const item=found[Number(b.dataset.result)];addSelection(item.name,item.type,item.parent);$('#category-search').value='';box.classList.remove('open')})}
+  function renderChecks(){$('#checks').innerHTML=checkPresets.map(v=>`<label class="choice active"><input type="checkbox" value="${v}" checked>✓ ${v}</label>`).join('');$$('#checks .choice').forEach(label=>{const input=label.querySelector('input');label.onclick=()=>setTimeout(()=>{label.classList.toggle('active',input.checked);label.lastChild.textContent=`${input.checked?'✓':'○'} ${input.value}`})})}
+  function payload(){const industries=[],categories=[];selected.forEach(item=>(item.type==='category'?categories:industries).push(item.name));const deadline=$('[name="deadline"]').value;return{name:$('[name="name"]').value.trim()||`${industries[0]||categories[0]||'Мой фильтр'} · ${countries[country].name}`,filters:{countries:[country],sources:$$('#sources input:checked').map(i=>i.value),industries,categories,regions:split('regions'),procedures:split('procedures'),min_price:number('min_price'),max_price:number('max_price'),include_keywords:split('include'),exclude_keywords:split('exclude'),customer_keywords:split('customers'),deadline_days:deadline?Number(deadline):null},document_checklist:[...$$('#checks input:checked').map(i=>i.value),...split('checklist')]}}
+  function validate(s){if(s===2){const ok=selected.size>0||split('include').length>0;$('#subject-error').classList.toggle('visible',!ok);return ok}if(s===3){const from=number('min_price'),to=number('max_price'),deadline=$('[name="deadline"]').value;const ok=(from===null||Number.isFinite(from)&&from>=0)&&(to===null||Number.isFinite(to)&&to>=0)&&(from===null||to===null||to>=from)&&(!deadline||Number(deadline)>=1&&Number(deadline)<=365);$('#money-error').classList.toggle('visible',!ok);return ok}return true}
+  function renderReview(){const data=payload(),f=data.filters,subject=[...f.industries,...f.categories,...f.include_keywords].join(', '),amount=f.min_price!==null||f.max_price!==null?`${f.min_price??'0'} — ${f.max_price??'без лимита'} ${countries[country].currency}`:'без ограничений';const rows=[['Фильтр',data.name],['Страна и площадки',`${countries[country].name} · ${f.sources.length?f.sources.join(', '):'все площадки'}`],['Предмет',subject],['Регион и сумма',`${f.regions.join(', ')||'вся страна'} · ${amount}`],['ИИ проверит',data.document_checklist.join(', ')||'общий анализ документов']];$('#review').innerHTML=rows.map(([label,value])=>`<div class="review-row"><b>${label}</b>${esc(value)}</div>`).join('')}
+  function showStep(value){step=Math.max(1,Math.min(4,value));$$('.step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===step));$$('.progress span').forEach((bar,i)=>bar.classList.toggle('done',i<step));$('#back').hidden=step===1;$('#next').textContent=step===4?'Сохранить фильтр':'Далее';if(step===4)renderReview();window.scrollTo({top:0,behavior:'smooth'})}
+  function decodeInitial(){const encoded=new URLSearchParams(location.search).get('profile');if(!encoded)return null;try{const binary=atob(encoded.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((encoded.length+3)%4)),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes))}catch(_){return null}}
+  function applyInitial(data){if(!data)return;$('#title').textContent='Изменить фильтр';$('[name="name"]').value=data.name||'';const f=data.filters||{};setCountry((f.countries||['BY'])[0],new Set(f.sources||[]));(f.industries||[]).forEach(n=>addSelection(n,'industry'));(f.categories||[]).forEach(n=>addSelection(n,'category'));const fields={regions:'regions',include_keywords:'include',exclude_keywords:'exclude',customer_keywords:'customers',procedures:'procedures',min_price:'min_price',max_price:'max_price',deadline_days:'deadline'};Object.entries(fields).forEach(([key,name])=>{const value=f[key];$(`[name="${name}"]`).value=Array.isArray(value)?value.join('; '):(value??'')});const wanted=new Set(data.document_checklist||[]);$$('#checks input').forEach(input=>{input.checked=wanted.has(input.value);input.closest('label').classList.toggle('active',input.checked);input.closest('label').lastChild.textContent=`${input.checked?'✓':'○'} ${input.value}`;wanted.delete(input.value)});$('[name="checklist"]').value=[...wanted].join('; ')}
+  $$('.country').forEach(b=>b.onclick=()=>setCountry(b.dataset.country));$('#category-search').addEventListener('input',e=>searchCatalog(e.target.value));$('#back').onclick=()=>showStep(step-1);$('#next').onclick=()=>{if(!validate(step))return;if(step<4){showStep(step+1);return}const data=payload(),raw=JSON.stringify(data);if(new TextEncoder().encode(raw).length>3900){const message='Слишком много условий для одной формы. Уберите часть категорий или длинных текстов и попробуйте снова.';tg?.showAlert?tg.showAlert(message):alert(message);return}if(tg?.sendData){tg.sendData(raw);tg.close()}else{document.querySelector('main').innerHTML='<div class="success"><div class="icon">✅</div><h2>Форма готова</h2><p class="muted">В Telegram она передаст фильтр боту. Данные собраны корректно.</p></div>';document.querySelector('footer').remove()}};
+  renderPopular();renderChecks();setCountry('BY');loadCatalog().then(()=>applyInitial(decodeInitial()));showStep(1);
+</script>
+</body>
+</html>
