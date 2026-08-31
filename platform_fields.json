@@ -1,0 +1,259 @@
+{
+  "BY": {
+    "platform": "goszakupki.by",
+    "note": "Поля формы https://goszakupki.by/tenders/posted, снято с живой страницы.",
+    "fields": [
+      {
+        "key": "text",
+        "param": "TendersSearch[text]",
+        "type": "text",
+        "label": "Слова в названии",
+        "hint": "Ищет по тексту закупки"
+      },
+      {
+        "key": "industry",
+        "param": "TendersSearch[industry]",
+        "type": "catalog",
+        "label": "Отрасль и категории",
+        "hint": "Официальный справочник площадки"
+      },
+      {
+        "key": "price_from",
+        "param": "TendersSearch[price_from]",
+        "type": "number",
+        "label": "Сумма от",
+        "unit": "BYN"
+      },
+      {
+        "key": "price_to",
+        "param": "TendersSearch[price_to]",
+        "type": "number",
+        "label": "Сумма до",
+        "unit": "BYN"
+      },
+      {
+        "key": "region",
+        "param": "TendersSearch[region][]",
+        "type": "multi",
+        "label": "Регион",
+        "options": [
+          {
+            "value": "1",
+            "name": "Брестская область"
+          },
+          {
+            "value": "2",
+            "name": "Витебская область"
+          },
+          {
+            "value": "3",
+            "name": "Гомельская область"
+          },
+          {
+            "value": "4",
+            "name": "Гродненская область"
+          },
+          {
+            "value": "5",
+            "name": "Минская область"
+          },
+          {
+            "value": "6",
+            "name": "Могилевская область"
+          },
+          {
+            "value": "7",
+            "name": "г. Минск"
+          }
+        ]
+      },
+      {
+        "key": "type",
+        "param": "TendersSearch[type][]",
+        "type": "multi",
+        "label": "Вид процедуры",
+        "options": [
+          {
+            "value": "Auction",
+            "name": "Электронный аукцион"
+          },
+          {
+            "value": "Request",
+            "name": "Запрос ценовых предложений"
+          },
+          {
+            "value": "eTrade",
+            "name": "Открытый конкурс / конкурс"
+          },
+          {
+            "value": "twoStageFirst",
+            "name": "Двухэтапный конкурс (первый этап)"
+          },
+          {
+            "value": "twoStageSecond",
+            "name": "Двухэтапный конкурс (второй этап)"
+          },
+          {
+            "value": "Marketing",
+            "name": "Заявка (запрос) о предоставлении сведений"
+          },
+          {
+            "value": "costLimit",
+            "name": "Заявка о ценах (тарифах) на ТРУ"
+          },
+          {
+            "value": "Limited",
+            "name": "Конкурс с ограниченным участием"
+          },
+          {
+            "value": "singleSource",
+            "name": "Закупка из одного источника (в электронном виде)"
+          },
+          {
+            "value": "eSingleSource",
+            "name": "Закупка из одного источника на ЭТП"
+          },
+          {
+            "value": "Other",
+            "name": "Иной вид процедуры закупки"
+          }
+        ]
+      },
+      {
+        "key": "status",
+        "param": "TendersSearch[status][]",
+        "type": "multi",
+        "label": "Статус закупки",
+        "options": [
+          {
+            "value": "Canceled",
+            "name": "Отменен"
+          },
+          {
+            "value": "Manque",
+            "name": "Признан несостоявшимся"
+          },
+          {
+            "value": "Submission",
+            "name": "Подача предложений"
+          },
+          {
+            "value": "WaitingForBargain",
+            "name": "Ожидание торгов"
+          },
+          {
+            "value": "Examination",
+            "name": "Рассмотрение предложений"
+          },
+          {
+            "value": "Bargain",
+            "name": "Проводятся торги"
+          },
+          {
+            "value": "Quantification",
+            "name": "Определение победителя"
+          },
+          {
+            "value": "Signing",
+            "name": "Подписание договора"
+          },
+          {
+            "value": "Closed",
+            "name": "Завершен"
+          },
+          {
+            "value": "Preselection",
+            "name": "Предварительный отбор"
+          },
+          {
+            "value": "DocsApproval",
+            "name": "Утверждение конкурсных документов"
+          },
+          {
+            "value": "Different",
+            "name": "Различен по лотам"
+          },
+          {
+            "value": "Paused",
+            "name": "Приостановлен"
+          },
+          {
+            "value": "ProviderSelected",
+            "name": "Выбран продавец (поставщик)"
+          },
+          {
+            "value": "SubmissionEss",
+            "name": "Подача документов/сведений"
+          },
+          {
+            "value": "ExaminationEss",
+            "name": "Рассмотрение документов/сведений"
+          },
+          {
+            "value": "ManqueEss",
+            "name": "Завершен без выбора"
+          }
+        ]
+      },
+      {
+        "key": "funds",
+        "param": "TendersSearch[funds][]",
+        "type": "multi",
+        "label": "Источник средств",
+        "options": [
+          {
+            "value": "1",
+            "name": "Государственные закупки"
+          },
+          {
+            "value": "2",
+            "name": "Закупки за собственные средства"
+          }
+        ]
+      },
+      {
+        "key": "customer_text",
+        "param": "TendersSearch[customer_text]",
+        "type": "text",
+        "label": "Заказчик",
+        "hint": "Название организации"
+      },
+      {
+        "key": "unp",
+        "param": "TendersSearch[unp]",
+        "type": "text",
+        "label": "УНП заказчика"
+      },
+      {
+        "key": "num",
+        "param": "TendersSearch[num]",
+        "type": "text",
+        "label": "Номер закупки"
+      },
+      {
+        "key": "created_from",
+        "param": "TendersSearch[created_from]",
+        "type": "date",
+        "label": "Размещена с"
+      },
+      {
+        "key": "created_to",
+        "param": "TendersSearch[created_to]",
+        "type": "date",
+        "label": "Размещена по"
+      },
+      {
+        "key": "request_end_from",
+        "param": "TendersSearch[request_end_from]",
+        "type": "date",
+        "label": "Приём заявок до, с"
+      },
+      {
+        "key": "request_end_to",
+        "param": "TendersSearch[request_end_to]",
+        "type": "date",
+        "label": "Приём заявок до, по"
+      }
+    ]
+  }
+}
