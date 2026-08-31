@@ -72,7 +72,7 @@
       <h2>Уточните условия</h2><p class="muted">Все поля необязательны. Пустое поле означает «без ограничения».</p>
       <div class="card grid">
         <div class="field wide" id="regions-box"><span>Регион</span>
-          <div class="choice-list" id="regions-list"></div>
+          <div class="preset-list" id="regions-list"></div>
           <p class="muted" id="regions-hint">Ничего не отмечено — искать по всей стране.</p></div>
         <label class="field">Сумма от, <span data-currency>BYN</span><input name="min_price" inputmode="decimal" placeholder="Без минимума"></label>
         <label class="field">Сумма до, <span data-currency>BYN</span><input name="max_price" inputmode="decimal" placeholder="Без максимума"></label>
@@ -82,7 +82,7 @@
           <label class="field">Конкретные заказчики<textarea name="customers" placeholder="Через запятую или с новой строки"></textarea></label>
           <label class="field">УНП заказчика<input name="customer_unp" inputmode="numeric" placeholder="Например, 100120777"></label>
           <div class="field"><span>Виды процедур</span>
-            <div class="choice-list" id="procedures-list"></div>
+            <div class="preset-list" id="procedures-list"></div>
             <p class="muted">Ничего не отмечено — любые процедуры.</p></div>
         </div></details>
         <div class="error wide" id="money-error">Проверьте сумму или число дней до окончания приёма.</div>
@@ -119,19 +119,20 @@
   function renderPopular(){$('#popular').innerHTML=popularNames.map(name=>`<button type="button" class="choice" data-name="${esc(name)}">${esc(name)}</button>`).join('');$$('#popular button').forEach(b=>b.onclick=()=>{const key=`industry:${b.dataset.name}`;selected.has(key)?removeSelection(key):addSelection(b.dataset.name)});renderSelected()}
   function flatten(data){return(data.industries||[]).flatMap(ind=>[{name:ind.name,type:'industry',parent:''},...(ind.subcategories||[]).map(item=>({name:item.name,type:'category',parent:ind.name}))])}
   let platformFields={};
-  async function loadPlatformFields(){for(const url of['../platform_fields.json','./platform_fields.json']){try{const r=await fetch(url);if(r.ok){platformFields=await r.json();return}}catch(_){}}}
+  async function loadPlatformFields(){for(const url of['./platform_fields.json','../platform_fields.json']){try{const r=await fetch(url);if(r.ok){platformFields=await r.json();return}}catch(_){}}}
   function checkedValues(sel){return $$(sel+' input:checked').map(i=>i.value)}
   function fieldOptions(code,key){const f=(platformFields[code]||{}).fields||[];const item=f.find(x=>x.key===key);return item&&item.options?item.options:[]}
-  function renderChoices(listSel,options,fallbackHint){const box=$(listSel);if(!box)return;if(!options.length){box.innerHTML='<input type="text" class="plain" placeholder="'+(fallbackHint||'Через запятую')+'">';return}
-    box.innerHTML=options.map(o=>`<label class="choice"><input type="checkbox" value="${o.name.replace(/"/g,'&quot;')}"><span>${o.name}</span></label>`).join('')}
+  function renderChoices(listSel,options){const box=$(listSel);if(!box)return;
+    box.innerHTML=options.map(o=>{const v=o.name.replace(/"/g,'&quot;');return `<label class="choice"><input type="checkbox" value="${v}">○ ${o.name}</label>`}).join('');
+    bindChoiceList(listSel)}
   function toggleAssist(show){const p=$('#assist-panel');if(p)p.hidden=!show}
   function sendAssistRequest(){const text=$('[name="assist_text"]').value.trim();
     if(text.length<10){const m='Опишите работу чуть подробнее — хотя бы одним предложением.';tg?.showAlert?tg.showAlert(m):alert(m);return}
     const data=payload();data.assist=text;const raw=JSON.stringify(data);
     if(tg?.sendData){tg.sendData(raw);tg.close()}
     else{const m='Подбор доступен внутри Telegram.';tg?.showAlert?tg.showAlert(m):alert(m)}}
-  function renderPlatformFields(){renderChoices('#regions-list',fieldOptions(country,'region'),'Например: Минск');renderChoices('#procedures-list',fieldOptions(country,'type'),'Например: электронный аукцион')}
-  async function loadCatalog(){for(const url of['../categories.json','./categories.json']){try{const response=await fetch(url);if(response.ok){catalog=flatten(await response.json());break}}catch(_){}}if(!catalog.length)catalog=fallbackIndustries.map(name=>({name,type:'industry',parent:''}))}
+  function renderPlatformFields(){renderChoices('#regions-list',fieldOptions(country,'region'));renderChoices('#procedures-list',fieldOptions(country,'type'))}
+  async function loadCatalog(){for(const url of['./categories.json','../categories.json']){try{const response=await fetch(url);if(response.ok){catalog=flatten(await response.json());break}}catch(_){}}if(!catalog.length)catalog=fallbackIndustries.map(name=>({name,type:'industry',parent:''}))}
   function searchCatalog(query){const box=$('#category-results'),words=query.toLocaleLowerCase('ru').split(/\s+/).filter(Boolean);if(!words.length){box.classList.remove('open');return}const found=catalog.filter(item=>words.every(word=>`${item.name} ${item.parent}`.toLocaleLowerCase('ru').includes(word))).slice(0,30);box.innerHTML=found.length?found.map((item,index)=>{const active=selected.has(`${item.type}:${item.name}`);return `<button type="button" class="result${active?' active':''}" data-result="${index}" aria-pressed="${active}"><span><b>${esc(item.name)}</b><small>${item.type==='category'?`Категория · ${esc(item.parent)}`:'Вся отрасль'}</small></span><span class="result-check">${active?'✓':'○'}</span></button>`}).join(''):'<div class="result muted">Ничего не найдено. Попробуйте другое слово.</div>';box.classList.add('open');$$('[data-result]').forEach(b=>b.onclick=()=>{const item=found[Number(b.dataset.result)],key=`${item.type}:${item.name}`;selected.has(key)?removeSelection(key):addSelection(item.name,item.type,item.parent);searchCatalog(query);$('#category-search').focus()})}
   function renderChecks(){$('#checks').innerHTML=checkPresets.map(v=>`<label class="choice active"><input type="checkbox" value="${v}" checked>✓ ${v}</label>`).join('');$$('#checks .choice').forEach(label=>{const input=label.querySelector('input');label.onclick=()=>setTimeout(()=>{label.classList.toggle('active',input.checked);label.lastChild.textContent=`${input.checked?'✓':'○'} ${input.value}`})})}
   function toggleCustom(open=!$('#custom-panel').hidden){$('#custom-panel').hidden=!open;$('#custom-toggle').textContent=open?'✕ Скрыть свой предмет':'✨ Нет точного предмета в списке'}
